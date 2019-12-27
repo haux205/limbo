@@ -51,6 +51,7 @@ import android.telephony.PhoneStateListener;
 import android.widget.Toast;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -63,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
     private SignalStrength signalStrength;
     private TelephonyManager telephonyManager;
-    List<CellInfo> allCellInfo;
+    List<CellInfo> allCellInfo,regCellinfo;
     Object mainObj = null;
 
     CellSignalStrengthCdma cdmaSignal;
@@ -116,7 +117,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         SubscriptionManager s = (SubscriptionManager) getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
-        allCellInfo = telephonyManager.getAllCellInfo(); //reminder to check whether the sim is registered or not
+        allCellInfo = telephonyManager.getAllCellInfo();
+        regCellinfo=new ArrayList<>();
         List<SubscriptionInfo> subInfo = s.getActiveSubscriptionInfoList();
         for (SubscriptionInfo info : subInfo) {
             info.getCarrierName();
@@ -127,10 +129,14 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        for (CellInfo cellInfo : allCellInfo) {
-            cellInfo.isRegistered();
+       for(i=0;i<allCellInfo.size();i++){
 
-        }
+           if(allCellInfo.get(i).isRegistered()){
+               regCellinfo.add(allCellInfo.get(i));
+           }
+       }
+
+
 
 
         // ##########################Listener for the signal strength###########################
@@ -144,6 +150,11 @@ public class MainActivity extends AppCompatActivity {
 
         // Register the listener for the telephony manager
         telephonyManager.listen(mListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+
+
+        Log.i("Dom","out"+regCellinfo.size());
+
+
 
 
     }
@@ -178,11 +189,12 @@ public class MainActivity extends AppCompatActivity {
 
 
                 int i = 0;
-                Log.i("dominic", mthd.getName());
-                for (i = 0; i < allCellInfo.size(); i++) {
 
-                    if (allCellInfo.get(i) instanceof CellInfoLte) {
-                        lteSignal = ((CellInfoLte) allCellInfo.get(i)).getCellSignalStrength();
+                for (i = 0; i < regCellinfo.size(); i++) {
+
+                    if (regCellinfo.get(i) instanceof CellInfoLte) {
+
+                        lteSignal = ((CellInfoLte) regCellinfo.get(i)).getCellSignalStrength();
                         lteSignal.getDbm(); //rssi
                         lteSignal.getRsrp();            //**** add mcc mnc in signal cards ***
                         lteSignal.getRsrq();
@@ -190,14 +202,14 @@ public class MainActivity extends AppCompatActivity {
                         lteSignal.getAsuLevel();
 
 
-                    } else if (allCellInfo.get(i) instanceof CellInfoCdma) {
-                        cdmaSignal = ((CellInfoCdma) allCellInfo.get(i)).getCellSignalStrength();
+                    } else if (regCellinfo.get(i) instanceof CellInfoCdma) {
+                        cdmaSignal = ((CellInfoCdma) regCellinfo.get(i)).getCellSignalStrength();
                         cdmaSignal.getCdmaDbm();
                         cdmaSignal.getAsuLevel();
 
 
-                    } else if (allCellInfo.get(i) instanceof CellInfoGsm) {
-                        gsmSignal = ((CellInfoGsm) allCellInfo.get(i)).getCellSignalStrength();
+                    } else if (regCellinfo.get(i) instanceof CellInfoGsm) {
+                        gsmSignal = ((CellInfoGsm) regCellinfo.get(i)).getCellSignalStrength();
                         gsmSignal.getDbm(); //rssi
                         gsmSignal.getAsuLevel();
                         permissionCheck(1);
@@ -206,8 +218,8 @@ public class MainActivity extends AppCompatActivity {
                         gsmLac.getCid();
 
                     }
-                    else if(allCellInfo.get(i) instanceof CellInfoWcdma){
-                        wcdmaSignal=((CellInfoWcdma) allCellInfo.get(i)).getCellSignalStrength();
+                    else if(regCellinfo.get(i) instanceof CellInfoWcdma){
+                        wcdmaSignal=((CellInfoWcdma) regCellinfo.get(i)).getCellSignalStrength();
                         wcdmaSignal.getDbm();
                         wcdmaSignal.getAsuLevel();
 
