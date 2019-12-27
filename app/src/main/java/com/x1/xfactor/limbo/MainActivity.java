@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
     int i;
 
 
+    @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         SubscriptionManager s = (SubscriptionManager) getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
-        allCellInfo = telephonyManager.getAllCellInfo();//reminder to check whether the sim is registered or not
+        allCellInfo = telephonyManager.getAllCellInfo(); //reminder to check whether the sim is registered or not
         List<SubscriptionInfo> subInfo = s.getActiveSubscriptionInfoList();
         for (SubscriptionInfo info : subInfo) {
             info.getCarrierName();
@@ -193,6 +194,7 @@ public class MainActivity extends AppCompatActivity {
                         cdmaSignal = ((CellInfoCdma) allCellInfo.get(i)).getCellSignalStrength();
                         cdmaSignal.getCdmaDbm();
                         cdmaSignal.getAsuLevel();
+
 
                     } else if (allCellInfo.get(i) instanceof CellInfoGsm) {
                         gsmSignal = ((CellInfoGsm) allCellInfo.get(i)).getCellSignalStrength();
