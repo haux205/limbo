@@ -11,6 +11,10 @@ import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import android.telephony.CellIdentityCdma;
+import android.telephony.CellIdentityGsm;
+import android.telephony.CellIdentityLte;
+import android.telephony.CellIdentityWcdma;
 import android.telephony.CellInfo;
 import android.telephony.CellInfoCdma;
 import android.telephony.CellInfoGsm;
@@ -60,18 +64,24 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration mAppBarConfiguration;
 
     //Variables for signal data
-    TextView tvOperator;
+    TextView tvOperator1,tvSimState1,tvServState1,tvNetType1,tvData1,tvMccMnc1,tvRoaming1;
+    TextView tvOperator2,tvSimState2,tvServState2,tvNetType2,tvData2,tvMccMnc2,tvRoaming2;
 
     private SignalStrength signalStrength;
     private TelephonyManager telephonyManager;
     List<CellInfo> allCellInfo,regCellinfo;
+    List<SubscriptionInfo> subInfo;
     Object mainObj = null;
 
     CellSignalStrengthCdma cdmaSignal;
     CellSignalStrengthLte lteSignal;
     CellSignalStrengthGsm gsmSignal;
     CellSignalStrengthWcdma wcdmaSignal;
-    GsmCellLocation gsmLac;
+    CellIdentityGsm gsmId;
+    CellIdentityLte lteId;
+    CellIdentityWcdma wcdmaid;
+    CellIdentityCdma cdmaId;
+
 
 
     private final static String LTE_TAG = "LTE_Tag";
@@ -109,24 +119,37 @@ public class MainActivity extends AppCompatActivity {
         //  NavigationUI.setupWithNavController(navigationView, navController);
 
 //###############################Start of main part of coding#########################################
+        tvOperator1=findViewById(R.id.tvOperator1);
+        tvSimState1=findViewById(R.id.tvSim1State);
+        tvServState1=findViewById(R.id.tvServ_State1);
+        tvNetType1=findViewById(R.id.tvNetworkType1);
+        tvData1=findViewById(R.id.tvMobileData1);
+        tvMccMnc1=findViewById(R.id.tvMccMnc1);
+        tvRoaming1=findViewById(R.id.tvRoaming1);
+
+        tvOperator2=findViewById(R.id.tvOperator2);
+        tvSimState2=findViewById(R.id.tvSim2State);
+        tvServState2=findViewById(R.id.tvServ_State2);
+        tvNetType2=findViewById(R.id.tvNetworkType2);
+        tvData2=findViewById(R.id.tvMobileData2);
+        tvMccMnc2=findViewById(R.id.tvMccMnc2);
+        tvRoaming2=findViewById(R.id.tvRoaming2);
 
 
         telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 
         permissionCheck(2);
 
-
         SubscriptionManager s = (SubscriptionManager) getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
         allCellInfo = telephonyManager.getAllCellInfo();
         regCellinfo=new ArrayList<>();
-        List<SubscriptionInfo> subInfo = s.getActiveSubscriptionInfoList();
+   subInfo = s.getActiveSubscriptionInfoList();
         for (SubscriptionInfo info : subInfo) {
             info.getCarrierName();
             info.getCountryIso();
             info.getDataRoaming();
             info.getMcc();
             info.getMnc();
-
         }
 
        for(i=0;i<allCellInfo.size();i++){
@@ -152,12 +175,14 @@ public class MainActivity extends AppCompatActivity {
         telephonyManager.listen(mListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
 
 
-        Log.i("Dom","out"+regCellinfo.size());
+        Log.i("Dom","out"+subInfo.size());
 
+simCardDetails(); //gets the sim card detiails and assigns to the cards
 
-
-
+//****************>> end of onCreate <<*********************************
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -209,13 +234,11 @@ public class MainActivity extends AppCompatActivity {
 
 
                     } else if (regCellinfo.get(i) instanceof CellInfoGsm) {
+
                         gsmSignal = ((CellInfoGsm) regCellinfo.get(i)).getCellSignalStrength();
                         gsmSignal.getDbm(); //rssi
                         gsmSignal.getAsuLevel();
-                        permissionCheck(1);
-                        gsmLac = (GsmCellLocation) telephonyManager.getCellLocation();
-                        gsmLac.getLac();
-                        gsmLac.getCid();
+
 
                     }
                     else if(regCellinfo.get(i) instanceof CellInfoWcdma){
@@ -260,7 +283,14 @@ void permissionCheck(int flag){
             }
         }
 }
+    private void simCardDetails() {
+        tvOperator1.setText(subInfo.get(0).getCarrierName());
+        tvMccMnc1.setText(Integer.toString(subInfo.get(0).getMcc())+Integer.toString(subInfo.get(0).getMnc()));
 
+        tvOperator2.setText(subInfo.get(1).getCarrierName());
+        tvMccMnc2.setText(Integer.toString(subInfo.get(1).getMcc())+Integer.toString(subInfo.get(1).getMnc()));
+
+    }
 
 
 }
