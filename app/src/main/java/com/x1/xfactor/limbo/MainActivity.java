@@ -69,8 +69,12 @@ public class MainActivity extends AppCompatActivity {
 
     private SignalStrength signalStrength;
     private TelephonyManager telephonyManager;
+    private SubscriptionManager subManager;
+
     List<CellInfo> allCellInfo,regCellinfo;
+    List<String> networkTypeList;
     List<SubscriptionInfo> subInfo;
+    List<Integer> dbm;
     Object mainObj = null;
 
     CellSignalStrengthCdma cdmaSignal;
@@ -82,13 +86,12 @@ public class MainActivity extends AppCompatActivity {
     CellIdentityWcdma wcdmaid;
     CellIdentityCdma cdmaId;
 
-
+MyPhoneStateListener mPhoneStatelistener;
 
     private final static String LTE_TAG = "LTE_Tag";
     private final static String LTE_SIGNAL_STRENGTH = "getLteSignalStrength";
 
     int i;
-
 
     @SuppressLint("MissingPermission")
     @Override
@@ -137,48 +140,57 @@ public class MainActivity extends AppCompatActivity {
 
 
         telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        mPhoneStatelistener = new MyPhoneStateListener();
 
         permissionCheck(2);
 
-        SubscriptionManager s = (SubscriptionManager) getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
-        allCellInfo = telephonyManager.getAllCellInfo();
+        subManager = (SubscriptionManager) getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+
         regCellinfo=new ArrayList<>();
-   subInfo = s.getActiveSubscriptionInfoList();
+        networkTypeList=new ArrayList<>();
+        subInfo=new ArrayList<>();
+        dbm= new ArrayList<>();
+        subInfo.add(subManager.getActiveSubscriptionInfoForSimSlotIndex(0));
+        subInfo.add(subManager.getActiveSubscriptionInfoForSimSlotIndex(1));
         for (SubscriptionInfo info : subInfo) {
             info.getCarrierName();
             info.getCountryIso();
             info.getDataRoaming();
             info.getMcc();
             info.getMnc();
+
         }
 
-       for(i=0;i<allCellInfo.size();i++){
-
-           if(allCellInfo.get(i).isRegistered()){
-               regCellinfo.add(allCellInfo.get(i));
-           }
-       }
 
 
 
+PhoneStateListener mListener= new PhoneStateListener(){
+    @Override
+    public void onSignalStrengthsChanged(SignalStrength signalStrength) {
+        super.onSignalStrengthsChanged(signalStrength);
+        Log.i("Domout","test");
 
-        // ##########################Listener for the signal strength###########################
-        final PhoneStateListener mListener = new PhoneStateListener() {
-            @Override
-            public void onSignalStrengthsChanged(SignalStrength sStrength) {
-                signalStrength = sStrength;
-                getSignalStrength();
-            }
-        };
+
+    }
+};
+
+
 
         // Register the listener for the telephony manager
-        telephonyManager.listen(mListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+        telephonyManager.listen(mPhoneStatelistener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+
+        allCellInfo = telephonyManager.getAllCellInfo();
+        for(i=0;i<allCellInfo.size();i++){
+
+            if(allCellInfo.get(i).isRegistered()){
+                regCellinfo.add(allCellInfo.get(i));
+            }
+        }
 
 
-        Log.i("Dom","out"+subInfo.size());
-
-simCardDetails(); //gets the sim card detiails and assigns to the cards
-
+        simCardDetails(); //gets the sim card details and assigns to the cards
+allCellInfo.clear();
+regCellinfo.clear();
 //****************>> end of onCreate <<*********************************
     }
 
@@ -202,6 +214,13 @@ simCardDetails(); //gets the sim card detiails and assigns to the cards
     private void getSignalStrength() {
         try {
             Method[] methods = android.telephony.SignalStrength.class.getMethods();
+            allCellInfo = telephonyManager.getAllCellInfo();
+            for(i=0;i<allCellInfo.size();i++){
+
+                if(allCellInfo.get(i).isRegistered()){
+                    regCellinfo.add(allCellInfo.get(i));
+                }
+            }
 
             for (Method mthd : methods) {
                 /*if (mthd.getName().equals(LTE_SIGNAL_STRENGTH))
@@ -218,8 +237,10 @@ simCardDetails(); //gets the sim card detiails and assigns to the cards
                 for (i = 0; i < regCellinfo.size(); i++) {
 
                     if (regCellinfo.get(i) instanceof CellInfoLte) {
+                        networkTypeList.add(i,"lte");
 
                         lteSignal = ((CellInfoLte) regCellinfo.get(i)).getCellSignalStrength();
+                        dbm.add(i,lteSignal.getDbm());
                         lteSignal.getDbm(); //rssi
                         lteSignal.getRsrp();            //**** add mcc mnc in signal cards ***
                         lteSignal.getRsrq();
@@ -228,26 +249,35 @@ simCardDetails(); //gets the sim card detiails and assigns to the cards
 
 
                     } else if (regCellinfo.get(i) instanceof CellInfoCdma) {
+                        networkTypeList.add(i,"cdma");
                         cdmaSignal = ((CellInfoCdma) regCellinfo.get(i)).getCellSignalStrength();
                         cdmaSignal.getCdmaDbm();
                         cdmaSignal.getAsuLevel();
 
 
                     } else if (regCellinfo.get(i) instanceof CellInfoGsm) {
+                        networkTypeList.add(i,"gsm");
 
                         gsmSignal = ((CellInfoGsm) regCellinfo.get(i)).getCellSignalStrength();
+                        dbm.add(i,gsmSignal.getDbm());
                         gsmSignal.getDbm(); //rssi
                         gsmSignal.getAsuLevel();
 
 
                     }
                     else if(regCellinfo.get(i) instanceof CellInfoWcdma){
+                        networkTypeList.add(i,"wcdma");
                         wcdmaSignal=((CellInfoWcdma) regCellinfo.get(i)).getCellSignalStrength();
                         wcdmaSignal.getDbm();
                         wcdmaSignal.getAsuLevel();
 
                     }
+
+
                 }
+                Log.i("marty",Integer.toString(dbm.get(0))+Integer.toString(dbm.get(1)));
+                regCellinfo.clear();
+                allCellInfo.clear();
 
             }
         }
@@ -284,13 +314,99 @@ void permissionCheck(int flag){
         }
 }
     private void simCardDetails() {
+        int state1,state2;
         tvOperator1.setText(subInfo.get(0).getCarrierName());
         tvMccMnc1.setText(Integer.toString(subInfo.get(0).getMcc())+Integer.toString(subInfo.get(0).getMnc()));
 
         tvOperator2.setText(subInfo.get(1).getCarrierName());
         tvMccMnc2.setText(Integer.toString(subInfo.get(1).getMcc())+Integer.toString(subInfo.get(1).getMnc()));
 
+        // Roaming status for sim 1 and 2
+            if(subInfo.get(0).getDataRoaming()==SubscriptionManager.DATA_ROAMING_ENABLE){
+            // data roaming is enabled for sim 1
+                tvRoaming1.setText("roaming");
+            }else{
+                // data roaming disabled sim 1
+                tvRoaming1.setText("Not roaming");
+            }
+
+            if(subInfo.get(1).getDataRoaming() == SubscriptionManager.DATA_ROAMING_ENABLE){
+                // data roaming enabled for sim 2
+                tvRoaming2.setText("roaming");
+            }
+            else{
+                // data roaming disabled for sim 2
+                tvRoaming2.setText("Not roaming");
+            }
+         state1=telephonyManager.getSimState(0);  //>>deprecated>>getDeviceId(int slotIndex)
+         state2=telephonyManager.getSimState(1);
+
+         // Sim states
+
+        switch (state1) {
+            case TelephonyManager.SIM_STATE_ABSENT:
+                tvSimState1.setText("Sim state absent");
+                break;
+            case TelephonyManager.SIM_STATE_READY:
+                tvSimState1.setText("Sim State Ready");
+                break;
+            case TelephonyManager.SIM_STATE_UNKNOWN:
+                tvSimState1.setText("Sim state unknown");
+                break;
+        }
+        switch (state2) {
+            case TelephonyManager.SIM_STATE_ABSENT:
+                tvSimState2.setText("Sim state absent");
+                break;
+            case TelephonyManager.SIM_STATE_READY:
+                tvSimState2.setText("Sim State Ready");
+                break;
+            case TelephonyManager.SIM_STATE_UNKNOWN:
+                tvSimState2.setText("Sim state unknown");
+                break;
+        }
+
+        // network type fo the sims
+
+        for (i = 0; i < regCellinfo.size(); i++) {
+
+            if (regCellinfo.get(i) instanceof CellInfoLte) {
+                networkTypeList.add(i,"lte");
+            } else if (regCellinfo.get(i) instanceof CellInfoCdma) {
+                networkTypeList.add(i,"cdma");
+
+            } else if (regCellinfo.get(i) instanceof CellInfoGsm) {
+                networkTypeList.add(i,"gsm");
+            }
+            else if(regCellinfo.get(i) instanceof CellInfoWcdma){
+                networkTypeList.add(i,"wcdma");
+            }
+        }
+        tvNetType1.setText(networkTypeList.get(0));
+        tvNetType2.setText(networkTypeList.get(1));
+
+        //Data connection status
+
     }
+
+void assignDbm(){
+        tvServState1.setText(Integer.toString(dbm.get(0)));
+        tvServState2.setText(Integer.toString(dbm.get(1)));
 
 
 }
+
+    class MyPhoneStateListener extends PhoneStateListener {
+        MainActivity obj;
+        @Override
+        public void onSignalStrengthsChanged(SignalStrength signalStrength) {
+            super.onSignalStrengthsChanged(signalStrength);
+            obj=new MainActivity();
+            obj.getSignalStrength();
+            Log.i("Domout","test");
+            getSignalStrength();
+        }
+    }
+}
+
+
