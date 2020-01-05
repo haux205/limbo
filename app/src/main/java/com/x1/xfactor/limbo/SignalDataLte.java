@@ -2,13 +2,16 @@ package com.x1.xfactor.limbo;
 
 public class SignalDataLte {
 int rssi,rssnr,rssrp,rssrq,asu,mcc,mnc;
-    SignalDataLte(int rssi , int rssrp,int rssrq,int rssnr,int asu,int mcc,int mnc ){
+double lat,lon;
+    SignalDataLte(int rssi , int rssrp,int rssrq,int rssnr,int asu,int mcc,int mnc,double lat,double lon ){
         this.rssi=rssi;
         this.rssnr=rssnr;
         this.rssrp=rssrp;
         this.rssrq=rssrq;
         this.mcc=mcc;
         this.mnc=mnc;
+        this.lat=lat;
+        this.lon=lon;
     }
 
 
@@ -40,5 +43,11 @@ int rssi,rssnr,rssrp,rssrq,asu,mcc,mnc;
         return mnc;
     }
 
+    public double getLat() {
+        return lat;
+    }
 
+    public double getLon() {
+        return lon;
+    }
 }
