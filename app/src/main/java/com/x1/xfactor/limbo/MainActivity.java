@@ -57,6 +57,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.view.Menu;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
@@ -156,6 +157,15 @@ public class MainActivity extends AppCompatActivity {
         tvData2 = findViewById(R.id.tvMobileData2);
         tvMccMnc2 = findViewById(R.id.tvMccMnc2);
         tvRoaming2 = findViewById(R.id.tvRoaming2);
+
+        Button b= findViewById(R.id.button);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i= new Intent(MainActivity.this,MapsActivity.class);
+                startActivity(i);
+            }
+        });
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
