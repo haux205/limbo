@@ -1,5 +1,7 @@
 package com.x1.xfactor.limbo;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
 import android.os.Bundle;
@@ -16,10 +18,12 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +32,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
 List<String> keylist;
-DatabaseReference q;
+List<SignalDataLte> ltelist;
+SignalDataLte  obj;
+DatabaseReference q,r;
 int i=0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        Log.i("droid","started");
         keylist=new ArrayList<>();
+        ltelist=new ArrayList<>();
         q=FirebaseDatabase.getInstance().getReference();
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -55,6 +63,7 @@ int i=0;
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+final DatabaseReference dref= FirebaseDatabase.getInstance().getReference().child("reports");
 DatabaseReference georef= FirebaseDatabase.getInstance().getReference("geo/data");
 GeoFire geoFire= new GeoFire(georef);
 GeoQuery geoQuery=geoFire.queryAtLocation(new GeoLocation(9.93,78.04),10.6);
@@ -62,6 +71,7 @@ geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
     @Override
     public void onKeyEntered(String key, GeoLocation location) {
         Log.i("dom",key+"//"+location.latitude+"//"+location.longitude);
+
     }
 
     @Override
@@ -84,10 +94,7 @@ geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
 
     }
 });
-for (i=0;i<keylist.size();i++){
 
-
-}
 
         mMap = googleMap;
         LatLng sydney = new LatLng(-34, 151);

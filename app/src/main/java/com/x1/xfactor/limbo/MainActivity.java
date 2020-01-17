@@ -229,6 +229,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(String key, DatabaseError error) {
 
+
                     }
                 });
 
@@ -418,7 +419,7 @@ void assignDbm(){
             super.onSignalStrengthsChanged(signalStrength);
             obj=new MainActivity();
             obj.getSignalStrength();
-            Log.i("Domout","test");
+          //  Log.i("Domout","test");
             getSignalStrength();
         }
     }
@@ -430,7 +431,6 @@ void assignDbm(){
        public void onLocationChanged(Location location) {
            lon=location.getLongitude();
            lat=location.getLatitude();
-           Log.i("Domout","test2");
        }
 
        @Override
