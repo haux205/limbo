@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -16,6 +17,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.ChildEventListener;
@@ -88,6 +90,7 @@ DatabaseReference q,r,dref;
     public void onGeoQueryReady() {
         Log.i("keylistsize",""+keylist.size());
 queryData();
+
     }
 
     @Override
@@ -98,8 +101,8 @@ queryData();
 
 
         mMap = googleMap;
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        LatLng sydney = new LatLng(9.93, 78.04);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("YOUR LOCATION"));
        // mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 5f));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(sydney, 13));
         CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -109,7 +112,20 @@ queryData();
                 .tilt(40)                   // Sets the tilt of the camera to 30 degrees
                 .build();                   // Creates a CameraPosition from the builder
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-        Log.i("map","test");
+
+        //**************
+
+
+
+        Log.i("map","test"+ltelist.size());
+
+        mMap.addCircle(new CircleOptions()
+                .center(sydney)
+                .radius(2000)
+                .strokeColor(Color.parseColor("#224287f5")))
+                .setFillColor(Color.parseColor("#224287f5"));
+        Log.i("mapstag1","end");
+
     }
 
    void queryData(){
@@ -120,7 +136,13 @@ queryData();
                @Override
                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 int s= dataSnapshot.getValue(SignalDataLte.class).getMcc();
-Log.i("logmessage","//"+s+"/id/");
+ltelist.add(dataSnapshot.getValue(SignalDataLte.class));
+Log.i("logmessage","//"+s+"/id/"+ltelist.size());
+
+LatLng reportsloc= new LatLng(dataSnapshot.getValue(SignalDataLte.class).getLat(),dataSnapshot.getValue(SignalDataLte.class).getLon());
+mMap.addMarker(new MarkerOptions().position(reportsloc).title(String.valueOf(dataSnapshot.getValue(SignalDataLte.class).getRssi())));
+
+
                }
 
                @Override
