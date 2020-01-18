@@ -3,6 +3,7 @@ package com.x1.xfactor.limbo;
 public class SignalDataLte {
 int rssi,rssnr,rssrp,rssrq,asu,mcc,mnc;
 double lat,lon;
+SignalDataLte(){}
     SignalDataLte(int rssi , int rssrp,int rssrq,int rssnr,int asu,int mcc,int mnc,double lat,double lon ){
         this.rssi=rssi;
         this.rssnr=rssnr;

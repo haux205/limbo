@@ -34,8 +34,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 List<String> keylist;
 List<SignalDataLte> ltelist;
 SignalDataLte  obj;
-DatabaseReference q,r;
-int i=0;
+DatabaseReference q,r,dref;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +42,7 @@ int i=0;
         Log.i("droid","started");
         keylist=new ArrayList<>();
         ltelist=new ArrayList<>();
-        q=FirebaseDatabase.getInstance().getReference();
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -63,15 +62,16 @@ int i=0;
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-final DatabaseReference dref= FirebaseDatabase.getInstance().getReference().child("reports");
-DatabaseReference georef= FirebaseDatabase.getInstance().getReference("geo/data");
-GeoFire geoFire= new GeoFire(georef);
-GeoQuery geoQuery=geoFire.queryAtLocation(new GeoLocation(9.93,78.04),10.6);
-geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+        r=FirebaseDatabase.getInstance().getReference();
+        dref= r.child("reports");
+        DatabaseReference georef= FirebaseDatabase.getInstance().getReference("geo/data");
+        GeoFire geoFire= new GeoFire(georef);
+        GeoQuery geoQuery=geoFire.queryAtLocation(new GeoLocation(9.93,78.04),10.6);
+        geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
     @Override
     public void onKeyEntered(String key, GeoLocation location) {
         Log.i("dom",key+"//"+location.latitude+"//"+location.longitude);
-
+        keylist.add(key);
     }
 
     @Override
@@ -86,7 +86,8 @@ geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
 
     @Override
     public void onGeoQueryReady() {
-
+        Log.i("keylistsize",""+keylist.size());
+queryData();
     }
 
     @Override
@@ -110,4 +111,24 @@ geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         Log.i("map","test");
     }
+
+   void queryData(){
+       int i;
+
+       for(i=0;i<keylist.size();i++){
+           dref.child(keylist.get(i)).addValueEventListener(new ValueEventListener() {
+               @Override
+               public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+int s= dataSnapshot.getValue(SignalDataLte.class).getMcc();
+Log.i("logmessage","//"+s+"/id/");
+               }
+
+               @Override
+               public void onCancelled(@NonNull DatabaseError databaseError) {
+
+               }
+           });
+
+       }
+   }
 }
