@@ -121,9 +121,9 @@ queryData();
 
         mMap.addCircle(new CircleOptions()
                 .center(sydney)
-                .radius(2000)
-                .strokeColor(Color.parseColor("#224287f5")))
-                .setFillColor(Color.parseColor("#224287f5"));
+                .radius(500)
+                .strokeColor(Color.parseColor("#2900cc00")))
+                .setFillColor(Color.parseColor("#2200cc00"));
         Log.i("mapstag1","end");
 
     }

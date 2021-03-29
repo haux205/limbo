@@ -77,8 +77,8 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration mAppBarConfiguration;
 
     //Variables for signal data
-    TextView tvOperator1, tvSimState1, tvServState1, tvNetType1, tvData1, tvMccMnc1, tvRoaming1;
-    TextView tvOperator2, tvSimState2, tvServState2, tvNetType2, tvData2, tvMccMnc2, tvRoaming2;
+    TextView tvOperator1, tvSimState1, tvServState1, tvNetType1, tvData1, tvMccMnc1, tvRoaming1,tvdbm1;
+    TextView tvOperator2, tvSimState2, tvServState2, tvNetType2, tvData2, tvMccMnc2, tvRoaming2,tvdbm2;
 
     private SignalStrength signalStrength;
     private TelephonyManager telephonyManager;
@@ -144,19 +144,18 @@ public class MainActivity extends AppCompatActivity {
 //###############################Start of main part of coding#########################################
         tvOperator1 = findViewById(R.id.tvOperator1);
         tvSimState1 = findViewById(R.id.tvSim1State);
-        tvServState1 = findViewById(R.id.tvServ_State1);
         tvNetType1 = findViewById(R.id.tvNetworkType1);
-        tvData1 = findViewById(R.id.tvMobileData1);
         tvMccMnc1 = findViewById(R.id.tvMccMnc1);
         tvRoaming1 = findViewById(R.id.tvRoaming1);
+        tvdbm1=findViewById(R.id.dbm1);
+
 
         tvOperator2 = findViewById(R.id.tvOperator2);
         tvSimState2 = findViewById(R.id.tvSim2State);
-        tvServState2 = findViewById(R.id.tvServ_State2);
         tvNetType2 = findViewById(R.id.tvNetworkType2);
-        tvData2 = findViewById(R.id.tvMobileData2);
         tvMccMnc2 = findViewById(R.id.tvMccMnc2);
         tvRoaming2 = findViewById(R.id.tvRoaming2);
+        tvdbm2=findViewById(R.id.dbm2);
 
         Button b= findViewById(R.id.button);
         b.setOnClickListener(new View.OnClickListener() {
@@ -198,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
             info.getMnc();
 
         }
-        telephonyManager.listen(mPhoneStatelistener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+
         allCellInfo = telephonyManager.getAllCellInfo();
         for (i = 0; i < allCellInfo.size(); i++) {
 
@@ -238,6 +237,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        telephonyManager.listen(mPhoneStatelistener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
 
 
 //****************>> end of onCreate <<*********************************
@@ -255,17 +255,21 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("MissingPermission")
     private void getSignalStrength() {
-        try {
-            Method[] methods = android.telephony.SignalStrength.class.getMethods();
-            allCellInfo = telephonyManager.getAllCellInfo();
-            for(i=0;i<allCellInfo.size();i++){
-
-                if(allCellInfo.get(i).isRegistered()){
-                    regCellinfo.add(allCellInfo.get(i));
+            try {
+                // Method[] methods = android.telephony.SignalStrength.class.getMethods();
+                if (telephonyManager == null) {
+                    Log.i("nukk", "nulls");
                 }
-            }
 
-            for (Method mthd : methods) {
+                allCellInfo = telephonyManager.getAllCellInfo();
+                for (i = 0; i < allCellInfo.size(); i++) {
+
+                    if (allCellInfo.get(i).isRegistered()) {
+                        regCellinfo.add(allCellInfo.get(i));
+                    }
+                }
+
+                // for (Method mthd : methods) {
                 /*if (mthd.getName().equals(LTE_SIGNAL_STRENGTH))
                 {
                     Log.i("test",mthd.getName());
@@ -280,15 +284,15 @@ public class MainActivity extends AppCompatActivity {
                 for (i = 0; i < regCellinfo.size(); i++) {
 
                     if (regCellinfo.get(i) instanceof CellInfoLte) {
-                        networkTypeList.add(i,"lte");
+                        networkTypeList.add(i, "lte");
 
                         lteSignal = ((CellInfoLte) regCellinfo.get(i)).getCellSignalStrength();
-                        dbm.add(i,lteSignal.getDbm());
-                         //rssi
-                                    //**** add mcc mnc in signal cards ***
-                        lteReport=new SignalDataLte(lteSignal.getDbm(),lteSignal.getRsrp(),lteSignal.getRsrq(),lteSignal.getRssnr(),lteSignal.getAsuLevel(),405,869,lat,lon);
+                        dbm.add(i, lteSignal.getDbm());
+                        //rssi
+                        //**** add mcc mnc in signal cards ***
+                        lteReport = new SignalDataLte(lteSignal.getDbm(), lteSignal.getRsrp(), lteSignal.getRsrq(), lteSignal.getRssnr(), lteSignal.getAsuLevel(), 405, 869, lat, lon);
 
-                    } else if (regCellinfo.get(i) instanceof CellInfoCdma) {
+                    } /*else if (regCellinfo.get(i) instanceof CellInfoCdma) {
                         networkTypeList.add(i,"cdma");
                         cdmaSignal = ((CellInfoCdma) regCellinfo.get(i)).getCellSignalStrength();
                         cdmaSignal.getCdmaDbm();
@@ -311,20 +315,18 @@ public class MainActivity extends AppCompatActivity {
                         wcdmaSignal.getDbm();
                         wcdmaSignal.getAsuLevel();
 
-                    }
-
-
+                    }*/
                 }
+
                 Log.i("marty",Integer.toString(dbm.get(0))+Integer.toString(dbm.get(1)));
+                assignDbm();
                 regCellinfo.clear();
                 allCellInfo.clear();
+            } catch (Exception e){Log.i((e.getMessage()),e.toString());}
 
-            }
-        }
-        catch (Exception e)
-        {
-            Log.e(LTE_TAG, "Exception: " + e.toString());
-        }
+
+
+
     }
 
 
@@ -338,26 +340,26 @@ public class MainActivity extends AppCompatActivity {
         tvMccMnc2.setText(Integer.toString(subInfo.get(1).getMcc())+Integer.toString(subInfo.get(1).getMnc()));
 
         // Roaming status for sim 1 and 2
-            if(subInfo.get(0).getDataRoaming()==SubscriptionManager.DATA_ROAMING_ENABLE){
+        if(subInfo.get(0).getDataRoaming()==SubscriptionManager.DATA_ROAMING_ENABLE){
             // data roaming is enabled for sim 1
-                tvRoaming1.setText("roaming");
-            }else{
-                // data roaming disabled sim 1
-                tvRoaming1.setText("Not roaming");
-            }
+            tvRoaming1.setText("roaming");
+        }else{
+            // data roaming disabled sim 1
+            tvRoaming1.setText("Not roaming");
+        }
 
-            if(subInfo.get(1).getDataRoaming() == SubscriptionManager.DATA_ROAMING_ENABLE){
-                // data roaming enabled for sim 2
-                tvRoaming2.setText("roaming");
-            }
-            else{
-                // data roaming disabled for sim 2
-                tvRoaming2.setText("Not roaming");
-            }
-         state1=telephonyManager.getSimState(0);  //>>deprecated>>getDeviceId(int slotIndex)
-         state2=telephonyManager.getSimState(1);
+        if(subInfo.get(1).getDataRoaming() == SubscriptionManager.DATA_ROAMING_ENABLE){
+            // data roaming enabled for sim 2
+            tvRoaming2.setText("roaming");
+        }
+        else{
+            // data roaming disabled for sim 2
+            tvRoaming2.setText("Not roaming");
+        }
+        state1=telephonyManager.getSimState(0);  //>>deprecated>>getDeviceId(int slotIndex)
+        state2=telephonyManager.getSimState(1);
 
-         // Sim states
+        // Sim states
 
         switch (state1) {
             case TelephonyManager.SIM_STATE_ABSENT:
@@ -403,14 +405,15 @@ public class MainActivity extends AppCompatActivity {
 
         //Data connection status
 
+
     }
 
-void assignDbm(){
-        tvServState1.setText(Integer.toString(dbm.get(0)));
-        tvServState2.setText(Integer.toString(dbm.get(1)));
+    void assignDbm(){
+        tvdbm1.setText(Integer.toString(dbm.get(0)));
+        tvdbm2.setText(Integer.toString(dbm.get(1)));
 
 
-}
+    }
 
     class MyPhoneStateListener extends PhoneStateListener {
         MainActivity obj;
@@ -419,35 +422,33 @@ void assignDbm(){
             super.onSignalStrengthsChanged(signalStrength);
             obj=new MainActivity();
             obj.getSignalStrength();
-          //  Log.i("Domout","test");
+            Log.i("Domout","test");
             getSignalStrength();
         }
     }
 
-   private class MyLocationListener implements LocationListener{
+    private class MyLocationListener implements LocationListener{
 
 
-       @Override
-       public void onLocationChanged(Location location) {
-           lon=location.getLongitude();
-           lat=location.getLatitude();
-       }
+        @Override
+        public void onLocationChanged(Location location) {
+            lon=location.getLongitude();
+            lat=location.getLatitude();
+        }
 
-       @Override
-       public void onStatusChanged(String s, int i, Bundle bundle) {
+        @Override
+        public void onStatusChanged(String s, int i, Bundle bundle) {
 
-       }
+        }
 
-       @Override
-       public void onProviderEnabled(String s) {
+        @Override
+        public void onProviderEnabled(String s) {
 
-       }
+        }
 
-       @Override
-       public void onProviderDisabled(String s) {
+        @Override
+        public void onProviderDisabled(String s) {
 
-       }
-   }
+        }
+    }
 }
-
-

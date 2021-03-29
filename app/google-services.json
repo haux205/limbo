@@ -8,20 +8,12 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:55432866231:android:54c75f4e591e4262e2e032",
+        "mobilesdk_app_id": "1:55432866231:android:a819e807a1701305e2e032",
         "android_client_info": {
           "package_name": "com.x1.xfactor.limbo"
         }
       },
       "oauth_client": [
-        {
-          "client_id": "55432866231-5jp1uko1krpc6lsq2ms53397od0oflhh.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.x1.xfactor.limbo",
-            "certificate_hash": "5f10c9ef13a3a7734d3b68c028a670f779090690"
-          }
-        },
         {
           "client_id": "55432866231-j42s2siaoqegc44jg0fidi2hhkg8cr4q.apps.googleusercontent.com",
           "client_type": 3
